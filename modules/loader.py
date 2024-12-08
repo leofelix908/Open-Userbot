@@ -77,7 +77,18 @@ async def loadmod(_, message: Message):
             f.write(resp.content)
     else:
         file_name = await message.reply_to_message.download()
+        if not file_name:
+            await message.edit("<b>Failed to download the file.</b>")
+            return
+
+        if not os.path.exists(f"{BASE_PATH}/modules/custom_modules"):
+            os.mkdir(f"{BASE_PATH}/modules/custom_modules")
+
         module_name = message.reply_to_message.document.file_name[:-3]
+        if not os.path.exists(file_name):
+            await message.edit(f"<b>File <code>{file_name}</code> does not exist.</b>")
+            return
+
         os.rename(file_name, f"./modules/custom_modules/{module_name}.py")
 
     await message.edit(
@@ -93,6 +104,7 @@ async def loadmod(_, message: Message):
         },
     )
     restart()
+
 
 
 @Client.on_message(filters.command(["unloadmod", "ulm"], prefix) & filters.me)
