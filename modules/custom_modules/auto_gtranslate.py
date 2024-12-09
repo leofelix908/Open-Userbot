@@ -64,7 +64,7 @@ async def language_status(_, message: Message):
         else:
             await message.edit("<b>Auto-translation is disabled.</b>")
     else:
-        await message.edit(f"<b>Usage:</b> <code>{prefix}glang</code> [check language] \n<code>{prefix}glang off</code> [turn off auto-translation].")
+        await message.edit(f"<b>Usage:</b> \n<code>{prefix}glang</code> [check language] \n<code>{prefix}glang off</code> [turn off auto-translation].")
 
 @Client.on_message(filters.text & auto_translate_filter)
 async def auto_translate(_, message: Message):
