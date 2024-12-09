@@ -10,9 +10,9 @@ NEW_GEMINI_URL = (
 
 async def fetch_response(url: str, query: str, message: Message):
     response_msg = await (
-        message.edit("<code>Umm, lemme think...</code>")
+        message.edit("<code>Umm, lemme thinking...</code>")
         if message.from_user.is_self
-        else message.reply("Thinking...")
+        else message.reply("<code>Umm, lemme thinking...</code>")
     )
     try:
         response = requests.get(url)
