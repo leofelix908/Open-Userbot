@@ -12,11 +12,9 @@ from concurrent.futures import ThreadPoolExecutor
 from utils.misc import modules_help, prefix
 from utils.scripts import format_exc, progress
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# API details
 HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
 HUGGINGFACE_API_TOKEN = "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"
 
@@ -57,29 +55,24 @@ async def imgflux_(client: Client, message: Message):
     try:
         await message.edit_text("Processing...")
 
-        # Generate the image asynchronously
         image_bytes = await query_huggingface({"inputs": prompt})
         if image_bytes is None:
             return await message.edit_text("Failed to generate an image.")
 
-        # Save and send the image asynchronously
         image_path = "hf_flux_gen.jpg"
         await save_image(image_bytes, image_path)
 
         await message.reply_photo(image_path, progress=progress, progress_args=(message, time.time(), "Uploading image..."))
 
-        # Clean up the saved image file
         if os.path.exists(image_path):
             os.remove(image_path)
 
-        # Delete the processing message
         await message.delete()
 
     except Exception as e:
         logger.error(f"Unexpected Error: {e}")
         await message.edit_text(format_exc(e))
-
-# Help information for the module
+        
 modules_help["flux"] = {
     "fluxdev [prompt]*": "Generate an AI image using FLUX",
     "fld [prompt]*": "Generate an AI image using FLUX"
