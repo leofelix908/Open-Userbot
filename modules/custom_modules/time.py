@@ -6,14 +6,10 @@ from zoneinfo import ZoneInfo  # Python 3.9+ required
 
 from utils.misc import modules_help, prefix
 
-# GeoNames API credentials
 GEO_API_USERNAME = "tahseen"
-# OpenWeatherMap API credentials
 WEATHER_API_KEY = "3ec738bcb912c44a805858054ead1efd"
-# Default city
 DEFAULT_CITY = "Los Angeles"
 
-# Weather condition to emoji mapping
 WEATHER_EMOJIS = {
     "clear sky": "☀️",
     "few clouds": "🌤️",
@@ -23,6 +19,7 @@ WEATHER_EMOJIS = {
     "light rain": "🌧️",
     "moderate rain": "🌧️",
     "heavy rain": "🌧️",
+    "shower snow": "🌨️",
     "thunderstorm": "⛈️",
     "snow": "🌨️",
     "mist": "🌫️",
@@ -72,7 +69,6 @@ async def get_city_time(city_name: str = DEFAULT_CITY) -> str:
         time_12hr = city_time.strftime('%I:%M %p')
         date = city_time.strftime('%Y-%m-%d %A')
         
-        # Get a brief weather summary for the time command
         weather_data = await fetch_weather_data(city_name)
         if 'weather' in weather_data and 'main' in weather_data:
             temp = weather_data['main']['temp']
@@ -124,7 +120,6 @@ async def time_command(client: Client, message: Message):
         args = message.text.split(maxsplit=1)
         city_name = args[1].strip() if len(args) > 1 else DEFAULT_CITY
 
-    # Fetch city time and weather summary
     result = await get_city_time(city_name)
     
     if message.from_user.is_self:
@@ -147,7 +142,6 @@ async def weather_command(client: Client, message: Message):
     else:
         await message.reply(result, parse_mode=enums.ParseMode.HTML)
 
-# Module help descriptions
 modules_help["time"] = {
     "time [city]": "Shows the current time and weather.",
     "weather [city]": "Shows the current weather details."
