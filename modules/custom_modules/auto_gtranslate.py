@@ -56,7 +56,7 @@ async def language_status(_, message: Message):
         if lang_code:
             await message.edit(f"<b>Current language</b> <code>[{lang_code}]</code>.")
         else:
-            await message.edit(f"No language set. Use <code>{prefix}setglang</code> to set one.")
+            await message.edit(f"<code>No language set.</code>")
     elif command_text == f"{prefix}glang off":
         result = db.remove("custom.gtranslate", chat_id)
         if result:
