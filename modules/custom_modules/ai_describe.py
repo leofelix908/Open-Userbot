@@ -10,7 +10,7 @@ GEMINIIMG_URL = "https://bk9.fun/ai/geminiimg"
 @Client.on_message(filters.command(["describe"], prefix))
 async def describe_image(client, message: Message):
     if not (message.reply_to_message and message.reply_to_message.photo):
-        response_text = "Reply to an image and provide a prompt. Usage: `describe <prompt>`"
+        response_text = f"<b>Usage:</b> <code>{prefix}describe [reply to an image]</code>"
         await message.edit(response_text) if message.from_user.is_self else await message.reply(response_text)
         return
 
