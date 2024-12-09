@@ -62,7 +62,7 @@ async def process_file(message, prompt, model_to_use, file_type, status_msg, dis
 @Client.on_message(filters.command("getai", prefix) & filters.me)
 async def getai(_, message):
     """Analyze an image using Generative AI."""
-    prompt = message.text.split(maxsplit=1)[1] if len(message.command) > 1 else "Get details of the image."
+    prompt = message.text.split(maxsplit=1)[1] if len(message.command) > 1 else "Get details of the image, be accurate as much possible."
     await process_file(message, prompt, model, "image", "Analyzing image...", display_prompt=len(message.command) > 1)
 
 @Client.on_message(filters.command("aicook", prefix) & filters.me)
@@ -80,7 +80,7 @@ async def aiseller(_, message):
     else:
         await message.edit_text(f"<b>Usage:</b> <code>{prefix}aiseller [target audience]</code> [Reply to a product image]")
 
-@Client.on_message(filters.command(["transcribe", "trs"], prefix) & filters.me)
+@Client.on_message(filters.command(["transcribe", "ts"], prefix) & filters.me)
 async def transcribe(_, message):
     """Transcribe or summarize an audio or video file."""
     prompt = message.text.split(maxsplit=1)[1] if len(message.command) > 1 else "Transcribe this file."
