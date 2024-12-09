@@ -66,7 +66,7 @@ async def auto_translate(_, message: Message):
     except requests.exceptions.RequestException as e:
         await message.reply(f"Translation failed: {e}")
 
-modules_help["translate_auto"] = {
+modules_help["auto_translate"] = {
     "setlang <language_code>": "Set the preferred language for this chat.",
     "lang": "Show the chat's language or use `lang off` to turn off auto-translation.",
     "Auto-translation": "Automatically translates and edits your messages in the chat to the set language."
