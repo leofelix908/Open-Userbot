@@ -81,9 +81,9 @@ async def fetch_grok_response(query: str, message: Message, reply=False):
 async def grok(_, message: Message):
     if len(message.command) < 2:
         if message.from_user.is_self:
-            await message.edit(f"Usage: {prefix}grok <query>")
+            await message.edit(f"<b>Usage:</b> <code>{prefix}grok [prompt]</code>")
         else:
-            await message.reply(f"Usage: {prefix}grok <query>")
+            await message.reply(f"<b>Usage:</b> <code>{prefix}grok [prompt]</code>")
         return
 
     query = " ".join(message.command[1:]).strip()
