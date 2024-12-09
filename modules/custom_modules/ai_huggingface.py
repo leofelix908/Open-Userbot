@@ -122,7 +122,7 @@ async def manage_huggingface(_, message: Message):
         [f"{'*' if m == current_model or current_model == 'all' else ''}{i + 1}. {m}" for i, m in enumerate(models)]
     )
     settings = (
-        f"<b>Hugging Face settings:</b>\n"
+        f"<b>Hugging Face settings:</b>\n\n"
         f"<b>API Key:</b>\n<code>{api_key if api_key else 'Not set'}</code>\n\n"
         f"<b>Available Models:</b>\n<code>{model_list}</code>"
     )
