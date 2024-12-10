@@ -2,13 +2,10 @@ from datetime import datetime, timedelta
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.errors import ChatForwardsRestricted
-
 from utils.misc import modules_help, prefix
 
-# Default time zone offset in hours (e.g., +5 for Asia/Karachi)
 DEFAULT_TIME_ZONE_OFFSET = 5
 
-# Predefined greetings
 GREETINGS = {
     "morning": [
         "Good morning! 🌞",
@@ -39,7 +36,7 @@ def parse_time_and_days(args: list) -> tuple:
     :return: Number of days (int) and scheduled time (datetime object).
     """
     days = int(args[1])
-    local_time = datetime.strptime(args[2], "%I:%M %p")  # 12-hour format with AM/PM
+    local_time = datetime.strptime(args[2], "%I:%M %p")
     now = datetime.now()
     scheduled_time = now.replace(
         hour=local_time.hour, minute=local_time.minute, second=0, microsecond=0
@@ -81,25 +78,19 @@ async def handle_schedule_command(client: Client, message: Message, greeting_typ
     :param greeting_type: Type of greeting ('morning' or 'night').
     """
     try:
-        # Extract command arguments
         args = message.text.split(maxsplit=2)
         if len(args) < 3:
             raise ValueError
 
-        # Parse days and time
         days, scheduled_time = parse_time_and_days(args)
-
-        # Convert to UTC and adjust for past times
         start_time_utc = local_to_utc(scheduled_time)
         if start_time_utc < datetime.utcnow():
             start_time_utc += timedelta(days=1)
 
-        # Schedule greetings
         await schedule_greetings(
             client, message.chat.id, GREETINGS[greeting_type], start_time_utc, days
         )
 
-        # Format and send confirmation message
         formatted_time = scheduled_time.strftime("%I:%M %p")
         await message.edit(
             f"<code>Scheduled {greeting_type} greetings for {days} days starting at {formatted_time} (UTC+{DEFAULT_TIME_ZONE_OFFSET}).</code>"
@@ -122,7 +113,6 @@ async def schedule_night(client: Client, message: Message):
     await handle_schedule_command(client, message, "night")
 
 
-# Help information
 modules_help["greetings"] = {
     "morning <days> <HH:MM AM/PM>": "Schedules morning greetings for the specified number of days starting today at the given time.",
     "night <days> <HH:MM AM/PM>": "Schedules night greetings for the specified number of days starting today at the given time.",
