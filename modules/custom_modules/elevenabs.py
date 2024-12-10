@@ -6,14 +6,12 @@ from pyrogram.types import Message
 from utils.misc import modules_help, prefix
 from utils.db import db
 
-# Default ElevenLabs configuration
 DEFAULT_PARAMS = {
-    "voice_id": "21m00Tcm4TlvDq8ikWAM",  # Default voice ID
-    "stability": 0.5,  # Voice stability
-    "similarity_boost": 0.7,  # Voice similarity
+    "voice_id": "21m00Tcm4TlvDq8ikWAM",
+    "stability": 0.5,
+    "similarity_boost": 0.7,
 }
 
-# Generate audio using ElevenLabs API
 async def generate_elevenlabs_audio(text: str):
     api_key = db.get("custom.elevenlabs", "api_key")
     if not api_key:
@@ -51,13 +49,12 @@ async def generate_elevenlabs_audio(text: str):
 
     return audio_path
 
-# Command: ElevenLabs voice generation
 @Client.on_message(filters.command(["elevenlabs", "el"], prefix))
 async def elevenlabs_command(client: Client, message: Message):
     if len(message.command) < 2:
         await message.edit_text(
             "**Usage:**\n"
-            f"`{prefix}elevenlabs <text>`\n\n"
+            f"`{prefix}elevenlabs [text]`\n\n"
             "**Example:**\n"
             f"`{prefix}elevenlabs Hello, how are you?`",
             parse_mode=enums.ParseMode.MARKDOWN,
@@ -75,7 +72,6 @@ async def elevenlabs_command(client: Client, message: Message):
     except Exception as e:
         await client.send_message(message.chat.id, f"Error: {e}", parse_mode=enums.ParseMode.MARKDOWN)
 
-# Command: Set or view ElevenLabs configuration
 @Client.on_message(filters.command(["set_elevenlabs", "set_el"], prefix) & filters.me)
 async def set_elevenlabs_config(_, message: Message):
     args = message.command
@@ -83,11 +79,11 @@ async def set_elevenlabs_config(_, message: Message):
         current_values = {key: db.get("custom.elevenlabs", key, default) for key, default in DEFAULT_PARAMS.items()}
         api_key = db.get("custom.elevenlabs", "api_key", "Not Set")
         response = (
-            "**ElevenLabs Configuration:**\n"
-            f"- **api_key**: `{api_key}`\n"
-            + "\n".join([f"- **{key}**: `{value}`" for key, value in current_values.items()])
+            "**ElevenLabs Configuration:**\n\n"
+            f"**api_key**: `{api_key}`\n"
+            + "\n".join([f"**{key}**: `{value}`" for key, value in current_values.items()])
             + "\n\n**Usage:**\n"
-            f"`{prefix}set_elevenlabs <key> <value>`\n"
+            f"`{prefix}set_elevenlabs [key] [value]`\n"
             "**Keys:** `api_key`, `voice_id`, `stability`, `similarity_boost`"
         )
         await message.edit_text(response, parse_mode=enums.ParseMode.MARKDOWN)
@@ -112,7 +108,6 @@ async def set_elevenlabs_config(_, message: Message):
         )
         return
 
-    # Convert to appropriate types
     if key in ["stability", "similarity_boost"]:
         try:
             value = float(value)
@@ -126,9 +121,8 @@ async def set_elevenlabs_config(_, message: Message):
         parse_mode=enums.ParseMode.MARKDOWN,
     )
 
-# Module help
 modules_help["elevenlabs"] = {
     "el [text]*": "Generate a voice message using ElevenLabs API.",
     "set_el": "View or update ElevenLabs configuration parameters.",
     "set_el <key> <value>": "Set a specific ElevenLabs parameter.",
-                                    }
+}
