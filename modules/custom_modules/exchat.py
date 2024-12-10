@@ -5,7 +5,6 @@ from utils.misc import modules_help, prefix
 import os
 import datetime
 
-# Function to generate HTML content
 def generate_html(messages, owner_username, other_username, export_datetime):
     html = f'''
 <!DOCTYPE html>
@@ -195,8 +194,7 @@ def generate_html(messages, owner_username, other_username, export_datetime):
     '''
     return html
 
-# Command to export conversation
-@Client.on_message(filters.command("exp_chat", prefix) & filters.me)
+@Client.on_message(filters.command("exchat", prefix) & filters.me)
 async def export_chat(client: Client, message: Message):
     please_wait = await message.edit("Please wait...")
     chat_id = message.chat.id
@@ -224,9 +222,9 @@ async def export_chat(client: Client, message: Message):
         file.write(html_content)
 
     await client.send_document(chat_id, file_path)
-    os.remove(file_path)  # Clean up the file after sending
+    os.remove(file_path)
     await please_wait.delete()
 
-modules_help["export_chat"] = {
-    "exp_chat": "Export all messages in the chat to a HTML file"
+modules_help["exchat"] = {
+    "exchat": "Export all messages in the chat to a HTML file"
 }
