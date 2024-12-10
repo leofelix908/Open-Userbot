@@ -3,17 +3,13 @@ from pyrogram.types import Message
 import requests
 import logging
 import os
-
 from utils.misc import modules_help, prefix
 
-# Set up logging for debugging
 logging.basicConfig(level=logging.DEBUG)
 
-# Define the API URLs
 VIDEO_API_URL = "https://deliriussapi-oficial.vercel.app/anime/hentaivid"
 WAIFU_API_URL = "https://api.waifu.pics/nsfw/waifu"
 
-# Use a writable temporary directory
 TEMP_DIR = "/tmp/telegram_videos"
 
 if not os.path.exists(TEMP_DIR):
@@ -22,7 +18,7 @@ if not os.path.exists(TEMP_DIR):
 async def fetch_videos():
     try:
         response = requests.get(VIDEO_API_URL)
-        response.raise_for_status()  # Raise an exception for HTTP errors
+        response.raise_for_status()
         videos = response.json()
         logging.debug(f"Fetched videos: {videos}")
         return videos
