@@ -65,7 +65,7 @@ async def fake_recording_action(client: Client, chat_id: int, text: str):
         pass
 
 # Command: Play.ht voice generation
-@Client.on_message(filters.command(["playht", "play"], prefix))
+@Client.on_message(filters.command(["playht"], prefix))
 async def voice_command(client: Client, message: Message):
     if len(message.command) < 2:
         await message.edit_text(
@@ -93,7 +93,7 @@ async def voice_command(client: Client, message: Message):
         recording_task.cancel()
 
 # Command: Set or view Play.ht configuration
-@Client.on_message(filters.command(["set_playht", "set_play"], prefix) & filters.me)
+@Client.on_message(filters.command(["set_playht"], prefix) & filters.me)
 async def set_playht_config(_, message: Message):
     args = message.command
     if len(args) == 1:
