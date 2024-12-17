@@ -20,6 +20,7 @@ WEATHER_EMOJIS = {
     "moderate rain": "🌧️",
     "heavy rain": "🌧️",
     "shower snow": "🌨️",
+    "light snow": "🌨️",
     "thunderstorm": "⛈️",
     "snow": "🌨️",
     "mist": "🌫️",
