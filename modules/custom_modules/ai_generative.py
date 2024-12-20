@@ -35,7 +35,7 @@ async def process_file(message, prompt, model_to_use, file_type, status_msg, dis
         elif file_type in ["audio", "video"] and (reply.audio or reply.voice or reply.video or reply.video_note):
             uploaded_file = genai.upload_file(file_path)
             while uploaded_file.state.name == "PROCESSING":
-                await message.edit_text("<code>In processing...</code>")
+                await message.edit_text("<code>Umm, processing...</code>")
                 time.sleep(5)
                 uploaded_file = genai.get_file(uploaded_file.name)
 
