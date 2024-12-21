@@ -2,9 +2,12 @@ from datetime import datetime, timedelta
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.errors import ChatForwardsRestricted
+import asyncio
 from utils.misc import modules_help, prefix
 
 DEFAULT_TIME_ZONE_OFFSET = 5
+MORNING_TIME = "08:00 AM"
+NIGHT_TIME = "11:10 PM"
 
 GREETINGS = {
     "morning": [
@@ -29,11 +32,9 @@ def local_to_utc(local_time: datetime) -> datetime:
     return local_time - timedelta(hours=DEFAULT_TIME_ZONE_OFFSET)
 
 
-def parse_time_and_days(args: list) -> tuple:
+def parse_days_and_time(args: list) -> tuple[int, datetime]:
     """
-    Parses the days and time from the command arguments.
-    :param args: List of command arguments.
-    :return: Number of days (int) and scheduled time (datetime object).
+    Parses the number of days and time from the command arguments.
     """
     days = int(args[1])
     local_time = datetime.strptime(args[2], "%I:%M %p")
@@ -47,14 +48,7 @@ def parse_time_and_days(args: list) -> tuple:
 async def schedule_greetings(
     client: Client, chat_id: int, messages: list, start_time: datetime, days: int
 ):
-    """
-    Schedules greetings in the chat.
-    :param client: The Pyrogram client.
-    :param chat_id: Target chat ID.
-    :param messages: List of predefined messages.
-    :param start_time: Time to start scheduling messages (in UTC).
-    :param days: Number of days to schedule.
-    """
+    """Schedules greetings messages in the chat."""
     for day in range(days):
         schedule_date = start_time + timedelta(days=day)
         message_text = messages[day % len(messages)]
@@ -65,24 +59,26 @@ async def schedule_greetings(
         except ChatForwardsRestricted:
             await client.send_message(
                 chat_id,
-                "<code>Current chat has restricted message copy/forwards. Scheduling failed.</code>",
+                "<code>Scheduling failed: Restricted copy/forwards in this chat.</code>",
             )
             return
 
 
+async def send_status_and_delete(message: Message, text: str):
+    """Edits the message with the given text and deletes it after 5 seconds."""
+    status_message = await message.edit(text)
+    await asyncio.sleep(5)
+    await status_message.delete()
+
+
 async def handle_schedule_command(client: Client, message: Message, greeting_type: str):
-    """
-    Handles scheduling commands for greetings.
-    :param client: The Pyrogram client.
-    :param message: Incoming command message.
-    :param greeting_type: Type of greeting ('morning' or 'night').
-    """
+    """Handles the scheduling of specific greeting types."""
     try:
         args = message.text.split(maxsplit=2)
         if len(args) < 3:
             raise ValueError
 
-        days, scheduled_time = parse_time_and_days(args)
+        days, scheduled_time = parse_days_and_time(args)
         start_time_utc = local_to_utc(scheduled_time)
         if start_time_utc < datetime.utcnow():
             start_time_utc += timedelta(days=1)
@@ -92,12 +88,53 @@ async def handle_schedule_command(client: Client, message: Message, greeting_typ
         )
 
         formatted_time = scheduled_time.strftime("%I:%M %p")
-        await message.edit(
-            f"<code>Scheduled {greeting_type} greetings for {days} days starting at {formatted_time} (UTC+{DEFAULT_TIME_ZONE_OFFSET}).</code>"
+        await send_status_and_delete(
+            message,
+            f"<code>Scheduled {greeting_type} greetings for {days} days starting at {formatted_time} (UTC+{DEFAULT_TIME_ZONE_OFFSET}).</code>",
         )
     except ValueError:
-        await message.edit(
-            f"<code>Invalid format! Use:</code>\n<code>/{greeting_type} <days> <HH:MM AM/PM></code>"
+        await send_status_and_delete(
+            message,
+            f"<b>Usage:</b>\n<code>{prefix}{greeting_type} [days] [HH:MM AM/PM]</code>",
+        )
+
+
+@Client.on_message(filters.command("greet", prefix) & filters.me)
+async def schedule_greet(client: Client, message: Message):
+    """Schedules both morning and night greetings for a given number of days."""
+    try:
+        args = message.text.split(maxsplit=1)
+        if len(args) < 2:
+            raise ValueError
+
+        days = int(args[1])
+        now = datetime.now()
+
+        morning_time = datetime.strptime(MORNING_TIME, "%I:%M %p").replace(
+            year=now.year, month=now.month, day=now.day
+        )
+        night_time = datetime.strptime(NIGHT_TIME, "%I:%M %p").replace(
+            year=now.year, month=now.month, day=now.day
+        )
+
+        morning_time_utc = local_to_utc(morning_time)
+        night_time_utc = local_to_utc(night_time)
+
+        if morning_time_utc < datetime.utcnow():
+            morning_time_utc += timedelta(days=1)
+        if night_time_utc < datetime.utcnow():
+            night_time_utc += timedelta(days=1)
+
+        await schedule_greetings(client, message.chat.id, GREETINGS["morning"], morning_time_utc, days)
+        await schedule_greetings(client, message.chat.id, GREETINGS["night"], night_time_utc, days)
+
+        await send_status_and_delete(
+            message,
+            f"<code>Scheduled morning and night greetings for {days} days starting at {MORNING_TIME} and {NIGHT_TIME} (UTC+{DEFAULT_TIME_ZONE_OFFSET}).</code>",
+        )
+    except ValueError:
+        await send_status_and_delete(
+            message, f"<b>Usage:</b>\n<code>{prefix}greet [days]</code>"
         )
 
 
@@ -114,7 +151,8 @@ async def schedule_night(client: Client, message: Message):
 
 
 modules_help["greetings"] = {
-    "morning <days> <HH:MM AM/PM>": "Schedules morning greetings for the specified number of days starting today at the given time.",
-    "night <days> <HH:MM AM/PM>": "Schedules night greetings for the specified number of days starting today at the given time.",
+    "morning <days> <HH:MM AM/PM>": "Schedules morning greetings for the specified days at the given time.",
+    "night <days> <HH:MM AM/PM>": "Schedules night greetings for the specified days at the given time.",
+    "greet <days>": "Schedules both morning and night greetings for the specified days at fixed times.",
     "\n<b>Default time zone offset:</b>": f"UTC+{DEFAULT_TIME_ZONE_OFFSET}",
-}
+    }
