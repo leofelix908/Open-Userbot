@@ -67,7 +67,7 @@ async def schedule_greetings(
 async def send_status_and_delete(message: Message, text: str):
     """Edits the message with the given text and deletes it after 5 seconds."""
     status_message = await message.edit(text)
-    await asyncio.sleep(5)
+    await asyncio.sleep(1)
     await status_message.delete()
 
 
