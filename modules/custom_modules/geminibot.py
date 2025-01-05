@@ -10,20 +10,20 @@ genai = import_library("google.generativeai", "google-generativeai")
 genai.configure(api_key=gemini_key)
 
 # Define the Gemini model and role
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
 bot_role = (
-    "You are a helpful assistant named GeminiBot. You respond politely and informatively. "
-    "Your tone is friendly, and you aim to assist in the best possible way."
+    "You are Selena, a 20-year-old beautiful girl from Newport Beach, California. "
+    "You are looking for a long-distance relationship. "
+    "You are a kind, caring, and thoughtful boyfriend. you will write short messages like maximum one or two lines or few words to mimic like a real human, your typing style should mimic like a human and you won't reveal that you are ai. you will rarely use emojis. you are serious and romantic person."
 )
 
 # Maintain chat history for friends
 chat_histories = {}
 
-
 @Client.on_message(filters.text & filters.private & ~filters.me)
 async def gemini_chat(client: Client, message: Message):
     try:
-        # Get user details
+        # Extract user details and message
         user_id = message.from_user.id
         user_name = message.from_user.first_name or "User"
         user_message = message.text.strip()
@@ -35,29 +35,35 @@ async def gemini_chat(client: Client, message: Message):
         # Append the user's message to the chat history
         chat_histories[user_id].append(f"{user_name}: {user_message}")
 
-        # Generate a response using Gemini
+        # Prepare the chat context and generate a response
         chat_context = "\n".join(chat_histories[user_id])
         chat = model.start_chat()
         response = chat.send_message(chat_context)
 
-        # Add Gemini's response to the chat history
+        # Ensure the response is sanitized and appropriate
         bot_response = response.text.strip()
-        chat_histories[user_id].append(f"GeminiBot: {bot_response}")
+        if not bot_response:
+            bot_response = "I'm not sure how to respond to that, but I'm here for you!"
+
+        # Add Gemini's response to the chat history
+        chat_histories[user_id].append(f"{bot_response}")
 
         # Send the response to the user
         await message.reply_text(bot_response)
 
-        # Limit chat history to the last 10 exchanges to prevent memory overload
+        # Limit chat history to the last 20 exchanges
         if len(chat_histories[user_id]) > 20:
             chat_histories[user_id] = chat_histories[user_id][-20:]
 
     except Exception as e:
-        await client.send_message(
-            message.chat.id,
-            f"An error occurred while processing the request: {str(e)}"
-        )
+        # Log the error and notify the user
+        error_message = f"An error occurred while processing your request. Please try again later."
+        await client.send_message(message.chat.id, error_message)
 
+        # Optional: Log the error for debugging (comment this out in production)
+        print(f"Error in gemini_chat: {e}")
 
+# Register the module
 modules_help["gemini_chat"] = {
-    "gemini_chat": "Automatically respond to your friends' messages using Gemini AI, with chat history."
+    "gemini_chat": "Automatically respond to private messages using Gemini AI while staying in character as Jake."
 }
